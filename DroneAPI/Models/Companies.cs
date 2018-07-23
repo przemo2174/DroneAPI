@@ -6,25 +6,25 @@ namespace DroneAPI.Models
     public class Company
     {
         public int Id { get; set; }
-        public string Nazwa { get; set; }
+        public string Name { get; set; }
         public string Nip { get; set; }
         public string Krs { get; set; }
-        public string Baza { get; set; }
-        public DateTime? AktualneNaDzien { get; set; }
-        public string Stanowisko { get; set; }
-        public string Branza { get; set; }
-        public string Kod { get; set; }
-        public string Wojewodztwo { get; set; }
-        public string Miasto { get; set; }
-        public string Ulica { get; set; }
+        public string Base { get; set; }
+        public DateTime? UpdatedOn { get; set; }
+        public string Position { get; set; }
+        public string Industry { get; set; }
+        public string Postcode { get; set; }
+        public string Voivodeship { get; set; }
+        public string City { get; set; }
+        public string Street { get; set; }
         public string Email { get; set; }
-        public string Telefon { get; set; }
-        public string Witryna { get; set; }
+        public string Phone { get; set; }
+        public string Website { get; set; }
         public string Pkd { get; set; }
-        public string KodPkd { get; set; }
-        public bool? Sejmik { get; set; }
-        public bool? TabelaWraporcie { get; set; }
-        public bool? Zawieszony { get; set; }
+        public string Pkdcode { get; set; }
+        public bool? Council { get; set; }
+        public bool? TableInReport { get; set; }
+        public bool? Suspended { get; set; }
         public string Ankieta2015 { get; set; }
         public string Ankieta2016 { get; set; }
         public string Ankieta2017 { get; set; }

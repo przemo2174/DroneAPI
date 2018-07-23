@@ -30,33 +30,25 @@ namespace DroneAPI.Models
         {
             modelBuilder.Entity<Company>(entity =>
             {
-                entity.Property(e => e.AktualneNaDzien).HasColumnType("date");
-
                 entity.Property(e => e.Ankieta2015).HasMaxLength(255);
 
                 entity.Property(e => e.Ankieta2016).HasMaxLength(255);
 
                 entity.Property(e => e.Ankieta2017).HasMaxLength(255);
 
-                entity.Property(e => e.Baza).HasMaxLength(255);
+                entity.Property(e => e.Base).HasMaxLength(255);
 
-                entity.Property(e => e.Branza).HasMaxLength(255);
+                entity.Property(e => e.City).HasMaxLength(255);
 
                 entity.Property(e => e.Email).HasMaxLength(255);
 
-                entity.Property(e => e.Kod).HasMaxLength(10);
-
-                entity.Property(e => e.KodPkd)
-                    .HasColumnName("KodPKD")
-                    .HasMaxLength(255);
+                entity.Property(e => e.Industry).HasMaxLength(255);
 
                 entity.Property(e => e.Krs)
                     .HasColumnName("KRS")
                     .HasMaxLength(20);
 
-                entity.Property(e => e.Miasto).HasMaxLength(255);
-
-                entity.Property(e => e.Nazwa)
+                entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(255);
 
@@ -64,13 +56,21 @@ namespace DroneAPI.Models
                     .HasColumnName("NIP")
                     .HasMaxLength(20);
 
+                entity.Property(e => e.Phone).HasMaxLength(255);
+
                 entity.Property(e => e.Pkd)
                     .HasColumnName("PKD")
                     .HasMaxLength(255);
 
-                entity.Property(e => e.Stanowisko).HasMaxLength(255);
+                entity.Property(e => e.Pkdcode)
+                    .HasColumnName("PKDCode")
+                    .HasMaxLength(255);
 
-                entity.Property(e => e.TabelaWraporcie).HasColumnName("TabelaWRaporcie");
+                entity.Property(e => e.Position).HasMaxLength(255);
+
+                entity.Property(e => e.Postcode).HasMaxLength(10);
+
+                entity.Property(e => e.Street).HasMaxLength(255);
 
                 entity.Property(e => e.Tag2015).HasMaxLength(255);
 
@@ -78,13 +78,11 @@ namespace DroneAPI.Models
 
                 entity.Property(e => e.Tag2017).HasMaxLength(255);
 
-                entity.Property(e => e.Telefon).HasMaxLength(255);
+                entity.Property(e => e.UpdatedOn).HasColumnType("date");
 
-                entity.Property(e => e.Ulica).HasMaxLength(255);
+                entity.Property(e => e.Voivodeship).HasMaxLength(50);
 
-                entity.Property(e => e.Witryna).HasMaxLength(255);
-
-                entity.Property(e => e.Wojewodztwo).HasMaxLength(50);
+                entity.Property(e => e.Website).HasMaxLength(255);
             });
         }
     }
