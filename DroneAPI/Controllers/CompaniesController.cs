@@ -46,7 +46,16 @@ namespace DroneAPI.Controllers
         [HttpGet(Name = "GetCompanies")]
         public IActionResult GetCompanies(CompaniesQueryParameters companiesQueryParameters)
         {
-            var collectionBeforePaging = _dbContext.Companies.OrderBy(x => x.Name);
+            var collectionBeforePaging = _dbContext.Companies.OrderBy(x => x.Name).AsQueryable();
+
+            if (!string.IsNullOrEmpty(companiesQueryParameters.SearchQuery))
+            {
+                string searchQueryForWhereClause = companiesQueryParameters.SearchQuery.Trim().ToLowerInvariant();
+
+                collectionBeforePaging = collectionBeforePaging
+                    .Where(x => x.Name.ToLowerInvariant().Contains(searchQueryForWhereClause));
+
+            }
 
             PagedList<Company> pagedList = PagedList<Company>.Create(collectionBeforePaging, companiesQueryParameters.PageNumber, companiesQueryParameters.PageSize);
 
@@ -70,7 +79,13 @@ namespace DroneAPI.Controllers
 
             Response.Headers.Add("X-Pagination", Newtonsoft.Json.JsonConvert.SerializeObject(paginationMetadata));
 
-            return Ok(pagedList);
+            var response = new
+            {
+                metadata = paginationMetadata,
+                data = pagedList
+            };
+
+            return Ok(response);
         }
 
         private string CreateCompaniesResourceUri(CompaniesQueryParameters companiesQueryParameters,
