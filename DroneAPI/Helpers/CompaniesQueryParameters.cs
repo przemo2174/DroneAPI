@@ -18,6 +18,9 @@ namespace DroneAPI.Helpers
             set => _pageSize = (value > MaxPageSize) ? MaxPageSize : value;
         }
 
-        public string SearchQuery { get; set; }
+        public string Name { get; set; }
+        public string Nip { get; set; }
+        public string Voivodeship { get; set; }
+        public string City { get; set; }
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using DroneAPI.DTO;
 using DroneAPI.Helpers;
 using DroneAPI.Models;
 using Microsoft.AspNetCore.Cors;
@@ -30,7 +32,7 @@ namespace DroneAPI.Controllers
         //    return _dbContext.Companies.OrderBy(x => x.Name);
         //}
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetById")]
         public IActionResult GetById(int id)
         {
             Company company = _dbContext.Companies.SingleOrDefault(x => x.Id == id);
@@ -48,14 +50,39 @@ namespace DroneAPI.Controllers
         {
             var collectionBeforePaging = _dbContext.Companies.OrderBy(x => x.Name).AsQueryable();
 
-            if (!string.IsNullOrEmpty(companiesQueryParameters.SearchQuery))
+            if (!string.IsNullOrEmpty(companiesQueryParameters.Name))
             {
-                string searchQueryForWhereClause = companiesQueryParameters.SearchQuery.Trim().ToLowerInvariant();
+                string nameForWhereClause = companiesQueryParameters.Name.Trim().ToLowerInvariant();
 
                 collectionBeforePaging = collectionBeforePaging
-                    .Where(x => x.Name.ToLowerInvariant().Contains(searchQueryForWhereClause));
-
+                    .Where(x => x.Name.ToLowerInvariant().Contains(nameForWhereClause));
             }
+
+            if (!string.IsNullOrEmpty(companiesQueryParameters.Nip))
+            {
+                string nipForWhereClause = companiesQueryParameters.Nip.Trim().ToLowerInvariant();
+
+                collectionBeforePaging = collectionBeforePaging
+                    .Where(x => x.Nip.ToLowerInvariant().Contains(nipForWhereClause));
+            }
+
+            if (!string.IsNullOrEmpty(companiesQueryParameters.Voivodeship))
+            {
+                string voivodeshipForWhereClause = companiesQueryParameters.Voivodeship.Trim().ToLowerInvariant();
+
+                collectionBeforePaging = collectionBeforePaging
+                    .Where(x => x.Voivodeship.ToLowerInvariant().Contains(voivodeshipForWhereClause));
+            }
+
+            if (!string.IsNullOrEmpty(companiesQueryParameters.City))
+            {
+                string cityForWhereClause = companiesQueryParameters.City.Trim().ToLowerInvariant();
+
+                collectionBeforePaging = collectionBeforePaging
+                    .Where(x => x.City.ToLowerInvariant().Contains(cityForWhereClause));
+            }
+
+
 
             PagedList<Company> pagedList = PagedList<Company>.Create(collectionBeforePaging, companiesQueryParameters.PageNumber, companiesQueryParameters.PageSize);
 
@@ -88,6 +115,53 @@ namespace DroneAPI.Controllers
             return Ok(response);
         }
 
+        [HttpPost]
+        public IActionResult CreateCompany([FromBody] CreateCompanyDto companyDto)
+        {
+            if (companyDto == null)
+            {
+                return BadRequest();
+            }
+
+            var company = Mapper.Map<Company>(companyDto);
+
+            _dbContext.Companies.Add(company);
+
+            try
+            {
+                _dbContext.SaveChanges();
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, "A problem happened with handling you request.");
+            }
+
+            return CreatedAtRoute("GetById", new {id = company.Id}, company);
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteCompany(int id)
+        {
+            var company = _dbContext.Companies.SingleOrDefault(x => x.Id == id);
+
+            if (company == null)
+                return NotFound();
+
+
+            _dbContext.Companies.Remove(company);
+
+            try
+            {
+                _dbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "A problem happened with handling you request.");
+            }
+
+            return NoContent();
+        }
+
         private string CreateCompaniesResourceUri(CompaniesQueryParameters companiesQueryParameters,
             ResourceUriType type)
         {
@@ -97,19 +171,31 @@ namespace DroneAPI.Controllers
                     return _urlHelper.Link("GetCompanies", new
                     {
                         pageNumber = companiesQueryParameters.PageNumber - 1,
-                        pageSize = companiesQueryParameters.PageSize
+                        pageSize = companiesQueryParameters.PageSize,
+                        name = companiesQueryParameters.Name,
+                        nip = companiesQueryParameters.Nip,
+                        voivodeship = companiesQueryParameters.Voivodeship,
+                        city = companiesQueryParameters.City
                     });
                 case ResourceUriType.NextPage:
                     return _urlHelper.Link("GetCompanies", new
                     {
                         pageNumber = companiesQueryParameters.PageNumber + 1,
-                        pageSize = companiesQueryParameters.PageSize
+                        pageSize = companiesQueryParameters.PageSize,
+                        name = companiesQueryParameters.Name,
+                        nip = companiesQueryParameters.Nip,
+                        voivodeship = companiesQueryParameters.Voivodeship,
+                        city = companiesQueryParameters.City
                     });
                 default:
                     return _urlHelper.Link("GetCompanies", new
                     {
                         pageNumber = companiesQueryParameters.PageNumber,
-                        pageSize = companiesQueryParameters.PageSize
+                        pageSize = companiesQueryParameters.PageSize,
+                        name = companiesQueryParameters.Name,
+                        nip = companiesQueryParameters.Nip,
+                        voivodeship = companiesQueryParameters.Voivodeship,
+                        city = companiesQueryParameters.City
                     });
             }
         }

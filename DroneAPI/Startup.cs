@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using DroneAPI.DTO;
 using DroneAPI.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,7 +32,9 @@ namespace DroneAPI
         {
             services.AddDbContext<DroneDatabaseContext>(options =>
                 options.UseSqlServer(
-                    "Server=droneserver.database.windows.net;Database=DroneDatabase;User ID=drone;Password=Droniada2018;"));
+                    "Server=droneserver.database.windows.net;Database=DroneDatabaseDeveloper;User ID=drone;Password=Droniada2018;"));
+
+            services.AddAutoMapper();
             services.AddMvc();
             services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
@@ -54,6 +58,8 @@ namespace DroneAPI
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            Mapper.Initialize(cfg => { cfg.CreateMap<CreateCompanyDto, Company>(); });
 
             app.UseMvc();
         }
