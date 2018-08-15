@@ -4,7 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using DroneAPI.DTO;
+using DroneAPI.Helpers;
 using DroneAPI.Models;
+using DronesApp.API.DTO;
+using DronesApp.API.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -43,6 +46,7 @@ namespace DroneAPI
                     .AllowAnyHeader();
             }));
 
+            services.AddScoped<ICompaniesRepository, CompaniesRepository>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
             services.AddScoped<IUrlHelper, UrlHelper>(implementationFactory =>
             {
@@ -59,7 +63,12 @@ namespace DroneAPI
                 app.UseDeveloperExceptionPage();
             }
 
-            Mapper.Initialize(cfg => { cfg.CreateMap<CreateCompanyDto, Company>(); });
+            Mapper.Initialize(cfg =>
+            {
+                cfg.CreateMap<Company, CompanyDto>();
+                cfg.CreateMap<CreateCompanyDto, Company>();
+                cfg.CreateMap<PagedList<Company>, PagedList<CompanyDto>>();
+            });
 
             app.UseMvc();
         }

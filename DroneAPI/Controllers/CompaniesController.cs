@@ -6,6 +6,9 @@ using AutoMapper;
 using DroneAPI.DTO;
 using DroneAPI.Helpers;
 using DroneAPI.Models;
+using DronesApp.API.DTO;
+using DronesApp.API.Extensions;
+using DronesApp.API.Repositories;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,13 +20,13 @@ namespace DroneAPI.Controllers
     [Route("api/companies")]
     public class CompaniesController : Controller
     {
-        private readonly DroneDatabaseContext _dbContext;
         private readonly IUrlHelper _urlHelper;
+        private readonly ICompaniesRepository _companiesRepository;
 
-        public CompaniesController(DroneDatabaseContext dbContext, IUrlHelper urlHelper)
+        public CompaniesController(IUrlHelper urlHelper, ICompaniesRepository companiesRepository)
         {
-            _dbContext = dbContext;
             _urlHelper = urlHelper;
+            _companiesRepository = companiesRepository;
         }
 
         //[HttpGet]
@@ -35,11 +38,12 @@ namespace DroneAPI.Controllers
         [HttpGet("{id}", Name = "GetById")]
         public IActionResult GetById(int id)
         {
-            Company company = _dbContext.Companies.SingleOrDefault(x => x.Id == id);
+            Company company = _companiesRepository.GetCompanyById(id);
 
             if (company != null)
             {
-                return Ok(company);
+                CompanyDto companyDto = Mapper.Map<CompanyDto>(company);
+                return Ok(companyDto);
             }
 
             return NotFound();
@@ -48,43 +52,47 @@ namespace DroneAPI.Controllers
         [HttpGet(Name = "GetCompanies")]
         public IActionResult GetCompanies(CompaniesQueryParameters companiesQueryParameters)
         {
-            var collectionBeforePaging = _dbContext.Companies.OrderBy(x => x.Name).AsQueryable();
+            //var collectionBeforePaging = _dbContext.Companies.OrderBy(x => x.Name).AsQueryable();
 
-            if (!string.IsNullOrEmpty(companiesQueryParameters.Name))
-            {
-                string nameForWhereClause = companiesQueryParameters.Name.Trim().ToLowerInvariant();
+            //if (!string.IsNullOrEmpty(companiesQueryParameters.Name))
+            //{
+            //    string nameForWhereClause = companiesQueryParameters.Name.Trim().ToLowerInvariant();
 
-                collectionBeforePaging = collectionBeforePaging
-                    .Where(x => x.Name.ToLowerInvariant().Contains(nameForWhereClause));
-            }
+            //    collectionBeforePaging = collectionBeforePaging
+            //        .Where(x => x.Name.ToLowerInvariant().Contains(nameForWhereClause));
+            //}
 
-            if (!string.IsNullOrEmpty(companiesQueryParameters.Nip))
-            {
-                string nipForWhereClause = companiesQueryParameters.Nip.Trim().ToLowerInvariant();
+            //if (!string.IsNullOrEmpty(companiesQueryParameters.Nip))
+            //{
+            //    string nipForWhereClause = companiesQueryParameters.Nip.Trim().ToLowerInvariant();
 
-                collectionBeforePaging = collectionBeforePaging
-                    .Where(x => x.Nip.ToLowerInvariant().Contains(nipForWhereClause));
-            }
+            //    collectionBeforePaging = collectionBeforePaging
+            //        .Where(x => x.Nip.ToLowerInvariant().Contains(nipForWhereClause));
+            //}
 
-            if (!string.IsNullOrEmpty(companiesQueryParameters.Voivodeship))
-            {
-                string voivodeshipForWhereClause = companiesQueryParameters.Voivodeship.Trim().ToLowerInvariant();
+            //if (!string.IsNullOrEmpty(companiesQueryParameters.Voivodeship))
+            //{
+            //    string voivodeshipForWhereClause = companiesQueryParameters.Voivodeship.Trim().ToLowerInvariant();
 
-                collectionBeforePaging = collectionBeforePaging
-                    .Where(x => x.Voivodeship.ToLowerInvariant().Contains(voivodeshipForWhereClause));
-            }
+            //    collectionBeforePaging = collectionBeforePaging
+            //        .Where(x => x.Voivodeship.ToLowerInvariant().Contains(voivodeshipForWhereClause));
+            //}
 
-            if (!string.IsNullOrEmpty(companiesQueryParameters.City))
-            {
-                string cityForWhereClause = companiesQueryParameters.City.Trim().ToLowerInvariant();
+            //if (!string.IsNullOrEmpty(companiesQueryParameters.City))
+            //{
+            //    string cityForWhereClause = companiesQueryParameters.City.Trim().ToLowerInvariant();
 
-                collectionBeforePaging = collectionBeforePaging
-                    .Where(x => x.City.ToLowerInvariant().Contains(cityForWhereClause));
-            }
+            //    collectionBeforePaging = collectionBeforePaging
+            //        .Where(x => x.City.ToLowerInvariant().Contains(cityForWhereClause));
+            //}
+
+            PagedList<Company> pagedList = _companiesRepository.GetCompanies(companiesQueryParameters);
 
 
 
-            PagedList<Company> pagedList = PagedList<Company>.Create(collectionBeforePaging, companiesQueryParameters.PageNumber, companiesQueryParameters.PageSize);
+            //PagedList<Company> pagedList = PagedList<Company>.Create(collectionBeforePaging, companiesQueryParameters.PageNumber, companiesQueryParameters.PageSize);
+
+            //PagedList<CompanyDto> pagedList = _companiesService.GetCompanies(companiesQueryParameters);
 
             var previousPageLink = pagedList.HasPrevious
                 ? CreateCompaniesResourceUri(companiesQueryParameters, ResourceUriType.PreviousPage)
@@ -109,7 +117,7 @@ namespace DroneAPI.Controllers
             var response = new
             {
                 metadata = paginationMetadata,
-                data = pagedList
+                data = pagedList.ToMappedPagedList<Company, CompanyDto>()
             };
 
             return Ok(response);
@@ -123,43 +131,36 @@ namespace DroneAPI.Controllers
                 return BadRequest();
             }
 
-            var company = Mapper.Map<Company>(companyDto);
+            Company company = Mapper.Map<Company>(companyDto);
 
-            _dbContext.Companies.Add(company);
+            _companiesRepository.AddCompany(company);
 
-            try
-            {
-                _dbContext.SaveChanges();
-            }
-            catch(Exception ex)
+            if (!_companiesRepository.Save())
             {
                 return StatusCode(500, "A problem happened with handling you request.");
             }
 
-            return CreatedAtRoute("GetById", new {id = company.Id}, company);
+            return CreatedAtRoute("GetById", new { id = company.Id }, company);
         }
 
         [HttpDelete("{id}")]
         public IActionResult DeleteCompany(int id)
         {
-            var company = _dbContext.Companies.SingleOrDefault(x => x.Id == id);
+            Company company = _companiesRepository.GetCompanyById(id);
 
             if (company == null)
-                return NotFound();
-
-
-            _dbContext.Companies.Remove(company);
-
-            try
             {
-                _dbContext.SaveChanges();
+                return NotFound();
             }
-            catch (Exception ex)
+
+            _companiesRepository.DeleteCompany(company);
+
+            if (!_companiesRepository.Save())
             {
                 return StatusCode(500, "A problem happened with handling you request.");
             }
 
-            return NoContent();
+            return NoContent();          
         }
 
         private string CreateCompaniesResourceUri(CompaniesQueryParameters companiesQueryParameters,
