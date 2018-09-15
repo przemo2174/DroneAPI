@@ -52,47 +52,8 @@ namespace DroneAPI.Controllers
         [HttpGet(Name = "GetCompanies")]
         public IActionResult GetCompanies(CompaniesQueryParameters companiesQueryParameters)
         {
-            //var collectionBeforePaging = _dbContext.Companies.OrderBy(x => x.Name).AsQueryable();
-
-            //if (!string.IsNullOrEmpty(companiesQueryParameters.Name))
-            //{
-            //    string nameForWhereClause = companiesQueryParameters.Name.Trim().ToLowerInvariant();
-
-            //    collectionBeforePaging = collectionBeforePaging
-            //        .Where(x => x.Name.ToLowerInvariant().Contains(nameForWhereClause));
-            //}
-
-            //if (!string.IsNullOrEmpty(companiesQueryParameters.Nip))
-            //{
-            //    string nipForWhereClause = companiesQueryParameters.Nip.Trim().ToLowerInvariant();
-
-            //    collectionBeforePaging = collectionBeforePaging
-            //        .Where(x => x.Nip.ToLowerInvariant().Contains(nipForWhereClause));
-            //}
-
-            //if (!string.IsNullOrEmpty(companiesQueryParameters.Voivodeship))
-            //{
-            //    string voivodeshipForWhereClause = companiesQueryParameters.Voivodeship.Trim().ToLowerInvariant();
-
-            //    collectionBeforePaging = collectionBeforePaging
-            //        .Where(x => x.Voivodeship.ToLowerInvariant().Contains(voivodeshipForWhereClause));
-            //}
-
-            //if (!string.IsNullOrEmpty(companiesQueryParameters.City))
-            //{
-            //    string cityForWhereClause = companiesQueryParameters.City.Trim().ToLowerInvariant();
-
-            //    collectionBeforePaging = collectionBeforePaging
-            //        .Where(x => x.City.ToLowerInvariant().Contains(cityForWhereClause));
-            //}
-
+          
             PagedList<Company> pagedList = _companiesRepository.GetCompanies(companiesQueryParameters);
-
-
-
-            //PagedList<Company> pagedList = PagedList<Company>.Create(collectionBeforePaging, companiesQueryParameters.PageNumber, companiesQueryParameters.PageSize);
-
-            //PagedList<CompanyDto> pagedList = _companiesService.GetCompanies(companiesQueryParameters);
 
             var previousPageLink = pagedList.HasPrevious
                 ? CreateCompaniesResourceUri(companiesQueryParameters, ResourceUriType.PreviousPage)
@@ -154,6 +115,31 @@ namespace DroneAPI.Controllers
             }
 
             _companiesRepository.DeleteCompany(company);
+
+            if (!_companiesRepository.Save())
+            {
+                return StatusCode(500, "A problem happened with handling you request.");
+            }
+
+            return NoContent();          
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateCompany(int id, [FromBody] UpdateCompanyDto companyForUpdate)
+        {
+            if (companyForUpdate == null)
+            {
+                return BadRequest();
+            }
+
+            Company company = _companiesRepository.GetCompanyById(id);
+
+            if (company == null)
+            {
+                return NotFound();
+            }
+
+            Mapper.Map(companyForUpdate, company);
 
             if (!_companiesRepository.Save())
             {

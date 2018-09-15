@@ -66,7 +66,7 @@ namespace DroneAPI
             {
                 cfg.CreateMap<Company, CompanyDto>();
                 cfg.CreateMap<CreateCompanyDto, Company>();
-                cfg.CreateMap<PagedList<Company>, PagedList<CompanyDto>>();
+                cfg.CreateMap<UpdateCompanyDto, Company>();
             });
 
             app.UseMvc();
