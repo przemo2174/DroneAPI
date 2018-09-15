@@ -34,8 +34,7 @@ namespace DroneAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DroneDatabaseContext>(options =>
-                options.UseSqlServer(
-                    "Server=droneserver.database.windows.net;Database=DroneDatabaseDeveloper;User ID=drone;Password=Droniada2018;"));
+                options.UseSqlServer(Configuration.GetConnectionString("DroneDevelopmentDatabase")));
 
             services.AddAutoMapper();
             services.AddMvc();
